@@ -95,8 +95,10 @@ def join_code_blocks(parts):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lint Python code blocks in Markdown files.')
     parser.add_argument('directory', nargs='?', default=os.getcwd(), help='The base directory to scan for Markdown files (default: current directory).')
+    parser.add_argument('flake8_config', help='Path to the flake8 configuration file')
     args = parser.parse_args()
-
-    print(args.directory)
-    exit_code = main(args.directory)
+    print(f"Scanning directory: {args.directory}")
+    print(f"Using flake8 config: {args.flake8_config}")
+    exit_code = main(args.directory, args.flake8_config)
+    print(f"Exit code: {exit_code}")
     sys.exit(exit_code)
