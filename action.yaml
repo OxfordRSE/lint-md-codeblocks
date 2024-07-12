@@ -1,0 +1,21 @@
+name: "Lint Python Code Blocks in Markdown"
+description: "A GitHub Action to lint Python code blocks in Markdown files."
+inputs:
+  directory:
+    description: "The base directory to scan for Markdown files."
+    required: false
+    default: "."
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install flake8
+      run: pip install flake8
+
+    - name: Run lint script
+      run: python main.py ${{ inputs.directory }}
+      shell: bash

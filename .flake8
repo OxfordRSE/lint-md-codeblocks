@@ -1,0 +1,25 @@
+[flake8]
+ignore = E127, E128, E201, E202, E203, E225, E226, E231, E241, E261, E271, E302, E303, E305, E402, E501, E722, E741, F401, F811, F841, W291, W292, W293, W391
+# E201: Whitespace after '(', '{', or '['
+# E202: Whitespace before ')', '}', or ']'
+# E203: Whitespace before ':'
+# E225: Missing whitespace around operator
+# E226: Missing whitespace around arithmetic operator
+# E231: Missing whitespace after ',', ';', or ':'
+# E241: Multiple spaces after ','
+# E261: At least two spaces before inline comment
+# E271: Multiple spaces after keyword
+# E302: Expected 2 blank lines, found 1
+# E303: Too many blank lines (3)
+# E305: Expected 2 blank lines after end of function or class
+# E402: Module level import not at top of file
+# E501: Line too long (82 > 79 characters)
+# E722: Do not use bare 'except'
+# E741: Ambiguous variable name (e.g., 'l', 'O', or 'I')
+# F401: Imported but unused
+# F811: Redefinition of unused variable from line n
+# F841: Local variable name is assigned to but never used
+# W291: Trailing whitespace
+# W292: No newline at end of file
+# W293: Blank line contains whitespace
+# W391: Blank line at end of file
