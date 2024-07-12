@@ -40,7 +40,7 @@ def find_code_blocks(content):
     return parts
 
 
-def main(directory="."):
+def main(directory, flake8_config):
     files = get_markdown_files(directory)
     found_errors = False
     os.makedirs(".tmp", exist_ok=True)
@@ -59,7 +59,8 @@ def main(directory="."):
             with open(fname, 'w') as out:
                 out.write(py_content)
 
-            result = subprocess.run(['flake8', '--config=.flake8', fname], capture_output=True, text=True)
+            result = subprocess.run(['flake8', f'--config={flake8_config}', fname],
+                                    capture_output=True, text=True)
 
             output = result.stdout.strip()
             if output:
