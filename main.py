@@ -1,4 +1,3 @@
-
 import os
 import re
 import subprocess
@@ -23,31 +22,50 @@ def get_markdown_files(directory):
                 markdown_files.append(os.path.join(root, file))
     return markdown_files
 
+
 def find_code_blocks(content):
     """
-    Find all markdown code blocks in the given content.
+    Find all markdown code blocks and non-code text in the given content.
 
     Args:
     - content (str): The content to search for code blocks.
 
     Returns:
-    - list: A list of code block contents.
+    - list: A list of tuples where each tuple contains a boolean indicating if the block is code and the block content.
     """
     code_block_pattern = re.compile(
-        r"(?:```|~~~)\s*python\s*\n(.*?)\n(?:```|~~~)", 
+        r"(?:```|~~~)(python)?\s*\n(.*?)\n(?:```|~~~)",
         re.DOTALL
     )
-    return code_block_pattern.findall(content)
+
+    parts = []
+    last_pos = 0
+
+    for match in code_block_pattern.finditer(content):
+        if match.start() > last_pos:
+            parts.append((False, content[last_pos:match.start()]))
+        parts.append((bool(match.group(1)), match.group(2)))
+        last_pos = match.end()
+
+    if last_pos < len(content):
+        parts.append((False, content[last_pos:]))
+
+    return parts
+
 
 def main(directory="."):
     files = get_markdown_files(directory)
     found_errors = False
     for file in files:
         with open(file, 'r') as f:
+            relative_path = os.path.relpath(file, directory)
             fname = os.path.basename(file).replace('.md', '.py')
             content = f.read()
-            code_blocks = find_code_blocks(content)
-            py_content = join_code_blocks(code_blocks)
+            parts = find_code_blocks(content)
+            if not any(is_code for is_code, _ in parts):
+                # Skip the file if there are no Python code blocks
+                continue
+            py_content = join_code_blocks(parts)
             if not py_content:
                 continue
             with open(fname, 'w') as out:
@@ -59,26 +77,31 @@ def main(directory="."):
             if output:
                 found_errors = True
                 for line in output.split('\n'):
-                    print(line.replace('.py:', f'.md:'))
+                    print(line.replace(fname, f'{relative_path}'))
             os.remove(fname)
-    return found_errors
-            
-def join_code_blocks(code_blocks):
+    return 1 if found_errors else 0
+
+
+def join_code_blocks(parts):
     """
-    Join all code block contents together into one string.
+    Join all code block contents together into one string, with non-code blocks as comments.
 
     Args:
-    - contents (list): A list of strings, each representing the content of a file.
+    - parts (list): A list of tuples, where each tuple contains a boolean indicating if the block is code and the block content.
 
     Returns:
-    - str: A single string containing all joined code block contents.
+    - str: A single string containing all joined code block contents with non-code parts as comments.
     """
-    all_code_blocks = []
-    
-    for block in code_blocks:
-        all_code_blocks.append(block)  # Append only the code content
+    all_blocks = []
 
-    return "\n".join(all_code_blocks)
+    for is_code, block in parts:
+        if is_code:
+            all_blocks.append(block)
+        else:
+            comment_block = "\n".join("# " + line for line in block.split("\n"))
+            all_blocks.append(comment_block)
+
+    return "\n".join(all_blocks)
 
 
 if __name__ == "__main__":
@@ -87,4 +110,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(args.directory)
-    sys.exit(main(args.directory))
+    exit_code = main(args.directory)
+    sys.exit(exit_code)

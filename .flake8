@@ -1,5 +1,5 @@
 [flake8]
-ignore = E127, E128, E201, E202, E203, E225, E226, E231, E241, E261, E271, E302, E303, E305, E402, E501, E722, E741, F401, F811, F841, W291, W292, W293, W391
+ignore = E127, E128, E201, E202, E203, E225, E226, E231, E241, E261, E271, E302, E303, E305, E306, E402, E501, E722, E741, F401, F811, F841, W291, W292, W293, W391
 # E201: Whitespace after '(', '{', or '['
 # E202: Whitespace before ')', '}', or ']'
 # E203: Whitespace before ':'
@@ -12,6 +12,7 @@ ignore = E127, E128, E201, E202, E203, E225, E226, E231, E241, E261, E271, E302,
 # E302: Expected 2 blank lines, found 1
 # E303: Too many blank lines (3)
 # E305: Expected 2 blank lines after end of function or class
+# E306: Expected 1 blank line before a nested definition
 # E402: Module level import not at top of file
 # E501: Line too long (82 > 79 characters)
 # E722: Do not use bare 'except'
