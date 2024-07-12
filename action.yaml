@@ -18,5 +18,5 @@ runs:
       shell: bash
 
     - name: Run lint script
-      run: python main.py ${{ inputs.directory }}
+      run: run.sh
       shell: bash
