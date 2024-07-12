@@ -24,42 +24,30 @@ def get_markdown_files(directory):
 
 
 def find_code_blocks(content):
-    """
-    Find all markdown code blocks and non-code text in the given content.
-
-    Args:
-    - content (str): The content to search for code blocks.
-
-    Returns:
-    - list: A list of tuples where each tuple contains a boolean indicating if the block is code and the block content.
-    """
     code_block_pattern = re.compile(
-        r"(?:```|~~~)(python)?\s*\n(.*?)\n(?:```|~~~)",
-        re.DOTALL
+        r"(?:```|~~~)(python\s+nolint|python)?\s*\n(.*?)\n(?:```|~~~)", re.DOTALL
     )
-
     parts = []
     last_pos = 0
-
     for match in code_block_pattern.finditer(content):
         if match.start() > last_pos:
             parts.append((False, content[last_pos:match.start()]))
-        parts.append((bool(match.group(1)), match.group(2)))
+        if match.group(1) != 'python nolint':
+            parts.append((bool(match.group(1)), match.group(2)))
         last_pos = match.end()
-
     if last_pos < len(content):
         parts.append((False, content[last_pos:]))
-
     return parts
 
 
 def main(directory="."):
     files = get_markdown_files(directory)
     found_errors = False
+    os.makedirs(".tmp", exist_ok=True)
     for file in files:
         with open(file, 'r') as f:
             relative_path = os.path.relpath(file, directory)
-            fname = os.path.basename(file).replace('.md', '.py')
+            fname = ".tmp/" + os.path.basename(file).replace('.md', '.py')
             content = f.read()
             parts = find_code_blocks(content)
             if not any(is_code for is_code, _ in parts):
@@ -71,7 +59,7 @@ def main(directory="."):
             with open(fname, 'w') as out:
                 out.write(py_content)
 
-            result = subprocess.run(['flake8', fname], capture_output=True, text=True)
+            result = subprocess.run(['flake8', '--config=.flake8', fname], capture_output=True, text=True)
 
             output = result.stdout.strip()
             if output:
