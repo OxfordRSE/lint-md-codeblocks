@@ -7,4 +7,16 @@ inputs:
     default: "."
 runs:
   using: "composite"
-  main: 'run.sh'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+        
+    - name: Install flake8
+      run: pip install flake8
+      shell: bash
+
+    - name: Run lint script
+      run: python main.py ${{ inputs.directory }}
+      shell: bash
