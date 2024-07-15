@@ -25,49 +25,69 @@ def get_markdown_files(directory):
 
 def find_code_blocks(content):
     code_block_pattern = re.compile(
-        r"(?:```|~~~)(python\s+nolint|python)?\s*\n(.*?)\n(?:```|~~~)", re.DOTALL
+        r"^(\s*)(```|~~~)(.*?)\s*\n(.*?)(^\s*\2\s*$)", re.DOTALL | re.MULTILINE
     )
     parts = []
     last_pos = 0
+
     for match in code_block_pattern.finditer(content):
         if match.start() > last_pos:
-            parts.append((False, content[last_pos:match.start()]))
-        if match.group(1) != 'python nolint':
-            parts.append((bool(match.group(1)), match.group(2)))
+            non_code_content = content[last_pos:match.start()]
+            comment_block = "\n".join("# " + line for line in non_code_content.split("\n"))
+            parts.append((False, comment_block))
+
+        leading_spaces = match.group(1)[1:]
+        lang_line = match.group(3).strip()
+        code = match.group(4)
+        end_block = match.group(5)
+
+        if lang_line.startswith('python') and 'nolint' not in lang_line:
+            stripped_lines = []
+            for line in code.split('\n'):
+                if line.startswith(' ' * len(leading_spaces)):
+                    stripped_lines.append(line[len(leading_spaces):])
+                else:
+                    stripped_lines.append(line)
+            parts.append((True, ('\n').join(stripped_lines)))
+        else:
+            parts.append((False, match.group(0)))
+
         last_pos = match.end()
+
     if last_pos < len(content):
-        parts.append((False, content[last_pos:]))
+        non_code_content = content[last_pos:]
+        comment_block = "\n".join("# " + line for line in non_code_content.split("\n"))
+        parts.append((False, comment_block))
     return parts
+
 
 
 def main(directory, flake8_config):
     files = get_markdown_files(directory)
     found_errors = False
-    os.makedirs(".tmp", exist_ok=True)
     for file in files:
         with open(file, 'r') as f:
             relative_path = os.path.relpath(file, directory)
-            fname = ".tmp/" + os.path.basename(file).replace('.md', '.py')
+            fname = os.path.basename(file).replace('.md', '.py')
             content = f.read()
             parts = find_code_blocks(content)
             if not any(is_code for is_code, _ in parts):
-                # Skip the file if there are no Python code blocks
                 continue
             py_content = join_code_blocks(parts)
             if not py_content:
                 continue
-            with open(fname, 'w') as out:
+            with open(".tmp/" + fname, 'w') as out:
                 out.write(py_content)
-
-            result = subprocess.run(['flake8', f'--config={flake8_config}', fname],
-                                    capture_output=True, text=True)
-
+            result = subprocess.run(['flake8', f'--config={flake8_config}', ".tmp/" + fname], capture_output=True, text=True)
             output = result.stdout.strip()
             if output:
                 found_errors = True
+                lines = py_content.splitlines()
                 for line in output.split('\n'):
-                    print(line.replace(fname, f'{relative_path}'))
-            os.remove(fname)
+                    error_line_num = int(line.split(':')[1]) - 1
+                    error_line = lines[error_line_num]
+                    print(f"{line.replace(fname, relative_path)}\n    {error_line}")
+            os.remove(".tmp/" + fname)
     return 1 if found_errors else 0
 
 
