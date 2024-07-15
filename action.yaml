@@ -1,10 +1,14 @@
-name: "Lint Python Code Blocks in Markdown"
-description: "A GitHub Action to lint Python code blocks in Markdown files."
+name: "Lint Code Blocks in Markdown"
+description: "A GitHub Action to lint code blocks in Markdown files."
 inputs:
   directory:
     description: "The base directory to scan for Markdown files."
     required: false
     default: "."
+  language:
+    description: "The language to lint code blocks for."
+    required: true
+    default: "python"
 runs:
   using: "composite"
   steps:
@@ -12,13 +16,19 @@ runs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.12'
+    
+    - name: Install cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck
+      shell: bash
 
-    - name: Install dependencies
+    - name: Install flake8
       run: |
         pip install flake8
       shell: bash
 
     - name: Run lint script
       run: |
-        python ${{ github.action_path }}/main.py ${{ inputs.directory }} ${{ github.action_path }}/.flake8
+        python ${{ github.action_path }}/main.py ${{ inputs.directory }} ${{ github.action_path }}/.flake8 ${{ inputs.language }}
       shell: bash
