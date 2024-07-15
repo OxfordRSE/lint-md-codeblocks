@@ -15,7 +15,6 @@ def get_markdown_files(directory):
     Returns:
     - list: A list of matching .md file paths.
     """
-    print(os.listdir(directory))
     markdown_files = []
     for root, _, files in os.walk(directory):
         for file in files:
@@ -65,6 +64,7 @@ def find_code_blocks(content):
 
 def main(directory, flake8_config):
     files = get_markdown_files(directory)
+    print(files)
     found_errors = False
     for file in files:
         with open(file, 'r') as f:
