@@ -77,6 +77,7 @@ def main(directory, flake8_config):
             py_content = join_code_blocks(parts)
             if not py_content:
                 continue
+            os.makedirs(".tmp", exist_ok=True)
             with open(".tmp/" + fname, 'w') as out:
                 out.write(py_content)
             result = subprocess.run(['flake8', f'--config={flake8_config}', ".tmp/" + fname], capture_output=True, text=True)
