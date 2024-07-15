@@ -44,7 +44,9 @@ def find_code_blocks(content):
                 stripped_lines.append(line[len(leading_spaces):])
             else:
                 stripped_lines.append(line)
-        parts.append((True, lang_line, ('\n').join(stripped_lines)))
+        
+        # Add a newline before and after the code block
+        parts.append((True, lang_line, '\n' + '\n'.join(stripped_lines)))
 
         last_pos = match.end()
 
@@ -62,7 +64,6 @@ def lint_python(py_content, flake8_config):
     os.remove(fname)
     return output
 
-
 def lint_cpp(cpp_content):
     fname = "temp.cpp"
     with open(fname, 'w') as out:
@@ -74,14 +75,14 @@ def lint_cpp(cpp_content):
 
 def join_code_blocks(parts, language):
     """
-    Join all code block contents together into one string, with non-code blocks as comments.
+    Join all code block contents together into one string, with other code blocks as comments.
 
     Args:
     - parts (list): A list of tuples, where each tuple contains a boolean indicating if the block is code, the language, and the block content.
     - language (str): The programming language to filter code blocks by.
 
     Returns:
-    - str: A single string containing all joined code block contents with non-code parts as comments.
+    - str: A single string containing all joined code block contents with other code blocks as comments.
     """
     all_blocks = []
 
@@ -90,7 +91,12 @@ def join_code_blocks(parts, language):
     for is_code, lang, block in parts:
         if is_code and language in lang and "nolint" not in lang:
             all_blocks.append(block)
-        elif not is_code:
+        elif is_code:
+            # Add other code blocks as comments
+            comment_block = "\n".join(comment_prefix + line for line in block.split("\n"))
+            all_blocks.append(comment_block)
+        else:
+            # Add non-code parts as comments
             comment_block = "\n".join(comment_prefix + line for line in block.split("\n"))
             all_blocks.append(comment_block)
 
