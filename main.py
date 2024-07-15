@@ -88,8 +88,8 @@ def main(directory, flake8_config):
                     error_line_num = int(line.split(':')[1]) - 1
                     error_line = lines[error_line_num]
                     print(f"{line.replace(fname, relative_path)}\n    {error_line}")
-            else:
-                print(f"✅ {fname}: no problems found.")
+                else:
+                    print(f"✅ {fname}: no problems found.")
             os.remove(".tmp/" + fname)
     return 1 if found_errors else 0
 
