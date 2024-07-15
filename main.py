@@ -15,6 +15,7 @@ def get_markdown_files(directory):
     Returns:
     - list: A list of matching .md file paths.
     """
+    print(os.listdir(directory))
     markdown_files = []
     for root, _, files in os.walk(directory):
         for file in files:
